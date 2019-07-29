@@ -2,7 +2,7 @@
 
 This tool allows you to search a seed for your nano address. 
 
-Please only use this tool while you are offline, I am not responsible for any leaked seaks or lost funds.
+Please only use this tool while you are offline, I am not responsible for any leaked seeds or lost funds.
 
 Javascript functions in `js` folder are not mine. I do not recall where I found them but the proper credit should go to those individuals only.
 
