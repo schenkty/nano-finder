@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Find Account</title>
+    <script src="js/nacl.js"></script>
+    <script src="js/blake2b.js"></script>
+    <script src="js/functions.js"></script>
+  </head>
+  <body>
+    <center>
+      <h1>USE THIS TOOL ONLY OFFLINE!</h1>
+      <br>
+      Nano Account:
+      <input type="text" value="" id="nano-account" style="width:50%">
+      <br>
+      Nano Seed:
+      <input type="text" value="" id="nano-seed" style="width:50%">
+      <br>
+      Max Search Index:
+      <input type="number" value="100" id="nano-index" style="width:50%" min="1" max="10000">
+      <br>
+      <button type="button" name="button" onclick="searchSeed()">Seach Seed</button>
+      <div id="search-results"></div>
+    </center>
+  </body>
+  <script type="text/javascript">
+    function checkSeed(seed) {
+        if (!/[0-9A-F]{64}/i.test(seed)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function newPair(seed, accountIndex) {
+      var index = hex_uint8(dec2hex(accountIndex, 4));
+      var context = blake2bInit(32);
+      blake2bUpdate(context, seed);
+      blake2bUpdate(context, index);
+      var newKey = blake2bFinal(context);
+      return {
+        address: accountFromHexKey(uint8_hex(nacl.sign.keyPair.fromSecretKey(newKey).publicKey))
+      };
+    }
+
+    function searchSeed() {
+      document.getElementById('nano-account').disabled = true;
+      document.getElementById('nano-seed').disabled = true;
+      document.getElementById('nano-index').disabled = true;
+      document.getElementById('search-results').innerHTML = `Searching`;
+
+      let accountInput = document.getElementById("nano-account").value.replace("nano_", "xrb_");
+      let seedInput = document.getElementById("nano-seed").value;
+      let maxIndex = document.getElementById("nano-index").value;
+      var found = false;
+      var foundIndex = 0;
+
+      if (checkSeed(seedInput) === false) {
+          alert("Seed is not valid! Please try again with a valid seed");
+          return;
+      }
+
+      for (var i = 0; i < maxIndex; i++) {
+          var pair = newPair(hex_uint8(seedInput), i);
+
+          if (pair.address == accountInput) {
+              found = true;
+              foundIndex = i;
+          }
+      }
+
+      if (found === true) {
+          document.getElementById('search-results').innerHTML = `Found ${accountInput.replace("xrb_", "nano_")} at Index: ${foundIndex}`;
+          document.getElementById('nano-account').disabled = false;
+          document.getElementById('nano-seed').disabled = false;
+          document.getElementById('nano-index').disabled = false;
+      } else {
+          document.getElementById('search-results').innerHTML = `${accountInput.replace("xrb_", "nano_")} was not found!`;
+          document.getElementById('nano-account').disabled = false;
+          document.getElementById('nano-seed').disabled = false;
+          document.getElementById('nano-index').disabled = false;
+      }
+    }
+  </script>
+</html>
